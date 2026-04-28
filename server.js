@@ -10,6 +10,20 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+const MODEL = 'claude-sonnet-4-6';
+
+async function batchCalls(calls, batchSize = 3, delayMs = 1200) {
+  const results = [];
+  for (let i = 0; i < calls.length; i += batchSize) {
+    const batch = calls.slice(i, i + batchSize);
+    const batchResults = await Promise.all(batch.map(fn => fn()));
+    results.push(...batchResults);
+    if (i + batchSize < calls.length) {
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+  return results;
+}
 
 // Test endpoint to verify API key is set
 app.get('/api/test', (req, res) => {
@@ -49,7 +63,7 @@ app.post('/api/claude', async (req, res) => {
         'anthropic-beta': 'web-search-2025-03-05'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: MODEL,
         max_tokens: 1000,
         system: system || '',
         messages: [{ role: 'user', content: messageContent }],

@@ -564,6 +564,7 @@
           <input type="text" class="ticker-input" id="ticker-input" 
                  placeholder="Enter ticker(s) e.g. TSLA, NVDA, AAPL" value="TTD">
           <button class="btn-run" id="btn-run" onclick="runAnalysis()">Run Analysis</button>
+          <div id="progress" style="font-size:12px; color:#00ff00; margin-top:8px;"></div>
         </div>
       </header>
 
@@ -635,12 +636,33 @@
       }
     }
 
+    async function batchCalls(calls, batchSize = 3, delayMs = 1200) {
+      const results = [];
+      for (let i = 0; i < calls.length; i += batchSize) {
+        const batch = calls.slice(i, i + batchSize);
+        const batchResults = await Promise.all(batch.map(fn => fn()));
+        results.push(...batchResults);
+        const progress = document.getElementById('progress');
+        if (progress) {
+          progress.textContent = `Analyzing... ${Math.min(i + batchSize, calls.length)}/${calls.length} modules complete`;
+        }
+        if (i + batchSize < calls.length) {
+          await new Promise(r => setTimeout(r, delayMs));
+        }
+      }
+      return results;
+    }
+
     async function runAnalysis() {
       const btn = document.getElementById('btn-run');
       const errorMsg = document.getElementById('error-message');
       const statusBadge = document.getElementById('status-badge');
+      const progress = document.getElementById('progress');
       const tickerInput = document.getElementById('ticker-input').value.trim();
 
+      if (progress) {
+        progress.textContent = 'Starting analysis...';
+      }
       if (!tickerInput) {
         errorMsg.textContent = 'Please enter at least one ticker symbol';
         errorMsg.classList.add('show');
@@ -670,6 +692,10 @@
         statusBadge.textContent = 'Error';
       } finally {
         btn.disabled = false;
+        const progress = document.getElementById('progress');
+        if (progress) {
+          progress.textContent = 'Analysis complete';
+        }
       }
     }
 
@@ -709,8 +735,8 @@
         }
       ];
 
-      const promises = queries.map(q => fetchAnalysis(q.prompt, ticker));
-      const results = await Promise.all(promises);
+      const calls = queries.map(q => () => fetchAnalysis(q.prompt, ticker));
+      const results = await batchCalls(calls, 3, 1200);
 
       // Calculate overall score
       const scores = results.map(r => r.score).filter(s => s > 0);
