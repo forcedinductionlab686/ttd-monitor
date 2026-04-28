@@ -78,6 +78,11 @@ app.post('/api/claude', async (req, res) => {
   }
 });
 
+// Catch-all route to serve index.html for any other requests
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 app.listen(PORT, () => {
   console.log(`TTD Trade Thesis Monitor server running on http://localhost:${PORT}`);
 });
