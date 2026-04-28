@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TTD Trade Thesis Monitor</title>
+  <title>Stock Thesis Monitor</title>
   <style>
     * {
       margin: 0;
@@ -21,26 +21,36 @@
     }
 
     .container {
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 250px;
+      gap: 20px;
+    }
+
+    .main-content {
+      min-width: 0;
     }
 
     /* Header */
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
       padding: 20px;
       background: rgba(20, 20, 40, 0.8);
       border: 2px solid #00ff00;
       border-radius: 5px;
       box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+      margin-bottom: 30px;
     }
 
-    .header-left h1 {
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header-top h1 {
       font-size: 28px;
-      margin-bottom: 10px;
       text-shadow: 0 0 10px #00ff00;
     }
 
@@ -58,6 +68,55 @@
       font-size: 12px;
       font-weight: bold;
       color: #00ff00;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .mode-selector {
+      display: flex;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px;
+      border-radius: 5px;
+      border: 1px solid #00ff00;
+    }
+
+    .mode-btn {
+      padding: 8px 15px;
+      background: transparent;
+      color: #00ff00;
+      border: none;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .mode-btn.active {
+      background: rgba(0, 255, 0, 0.2);
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    }
+
+    .ticker-input {
+      padding: 10px 15px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid #00ff00;
+      border-radius: 3px;
+      color: #00ff00;
+      font-family: monospace;
+      font-size: 14px;
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .ticker-input::placeholder {
+      color: rgba(0, 255, 0, 0.5);
     }
 
     .btn-run {
@@ -83,6 +142,87 @@
     .btn-run:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+    }
+
+    /* Watchlist Panel */
+    .watchlist-panel {
+      background: rgba(20, 20, 40, 0.8);
+      border: 2px solid #00ff00;
+      border-radius: 5px;
+      padding: 15px;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: sticky;
+      top: 20px;
+    }
+
+    .watchlist-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #00ff00;
+      text-shadow: 0 0 10px #00ff00;
+    }
+
+    .watchlist-add {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 15px;
+    }
+
+    .watchlist-add input {
+      flex: 1;
+      padding: 6px 10px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid #00ff00;
+      border-radius: 3px;
+      color: #00ff00;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .watchlist-add button {
+      padding: 6px 12px;
+      background: rgba(0, 255, 0, 0.2);
+      border: 1px solid #00ff00;
+      border-radius: 3px;
+      color: #00ff00;
+      font-family: monospace;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .watchlist-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      background: rgba(30, 30, 50, 0.6);
+      border-left: 3px solid #00ff00;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .watchlist-item:hover {
+      background: rgba(0, 255, 0, 0.1);
+    }
+
+    .watchlist-ticker {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .watchlist-score {
+      font-size: 12px;
+      color: #00ff00;
+    }
+
+    .watchlist-remove {
+      color: #ff4444;
+      cursor: pointer;
+      margin-left: 10px;
     }
 
     /* Thesis Score Banner */
@@ -186,6 +326,12 @@
       border: 1px solid #ff4444;
     }
 
+    .status-blue {
+      background: rgba(0, 150, 255, 0.2);
+      color: #0096ff;
+      border: 1px solid #0096ff;
+    }
+
     /* Skeleton Loader */
     .skeleton {
       background: linear-gradient(90deg, #1a1a2e 25%, #2a2a4e 50%, #1a1a2e 75%);
@@ -251,149 +397,50 @@
       font-weight: bold;
     }
 
-    /* AI Summary */
-    .ai-summary-section {
-      background: rgba(20, 20, 40, 0.8);
-      border: 2px solid #00ff00;
-      border-radius: 5px;
-      padding: 20px;
-      margin-bottom: 30px;
-      display: none;
+    /* Portfolio Table */
+    .portfolio-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
     }
 
-    .ai-summary-section.show {
-      display: block;
-      animation: slideIn 0.5s ease-out;
+    .portfolio-table th,
+    .portfolio-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(0, 255, 0, 0.2);
     }
 
-    .summary-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 15px;
-      color: #00ff00;
-      text-shadow: 0 0 10px #00ff00;
-    }
-
-    .summary-content {
-      margin-bottom: 20px;
-      line-height: 1.8;
-      color: #00ff00;
-    }
-
-    .quick-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .action-btn {
-      padding: 8px 15px;
+    .portfolio-table th {
       background: rgba(0, 255, 0, 0.1);
-      border: 1px solid #00ff00;
-      border-radius: 3px;
-      color: #00ff00;
-      cursor: pointer;
-      font-family: monospace;
-      font-size: 12px;
-      transition: all 0.3s;
-    }
-
-    .action-btn:hover {
-      background: rgba(0, 255, 0, 0.2);
-      box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
-    }
-
-    /* News Feed */
-    .news-item {
-      background: rgba(30, 30, 50, 0.6);
-      border-left: 3px solid #00ff00;
-      padding: 15px;
-      margin-bottom: 12px;
-      border-radius: 3px;
-    }
-
-    .news-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 8px;
-    }
-
-    .news-title {
       font-weight: bold;
-      flex: 1;
-    }
-
-    .sentiment-badge {
-      padding: 3px 10px;
-      border-radius: 3px;
-      font-size: 11px;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-left: 10px;
-      white-space: nowrap;
-    }
-
-    .sentiment-bullish {
-      background: rgba(0, 255, 0, 0.2);
       color: #00ff00;
-      border: 1px solid #00ff00;
     }
 
-    .sentiment-bearish {
-      background: rgba(255, 0, 0, 0.2);
-      color: #ff4444;
-      border: 1px solid #ff4444;
+    .portfolio-table tr:hover {
+      background: rgba(0, 255, 0, 0.05);
     }
 
-    .sentiment-neutral {
-      background: rgba(255, 200, 0, 0.2);
-      color: #ffc800;
-      border: 1px solid #ffc800;
+    /* Compare Grid */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
     }
 
-    .news-text {
-      font-size: 13px;
-      color: #00ff00;
-      opacity: 0.9;
-    }
-
-    /* Scorecard */
-    .scorecard-section {
+    .compare-card {
       background: rgba(20, 20, 40, 0.8);
       border: 2px solid #00ff00;
       border-radius: 5px;
-      padding: 20px;
-      display: none;
+      padding: 15px;
     }
 
-    .scorecard-section.show {
-      display: block;
-      animation: slideIn 0.5s ease-out;
-    }
-
-    .scorecard-title {
-      font-size: 18px;
+    .compare-ticker {
+      font-size: 20px;
       font-weight: bold;
-      margin-bottom: 20px;
-      color: #00ff00;
-      text-shadow: 0 0 10px #00ff00;
-    }
-
-    .pillar {
-      margin-bottom: 25px;
-    }
-
-    .pillar-name {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    .pillar-score {
+      margin-bottom: 10px;
+      text-align: center;
       color: #00ff00;
     }
 
@@ -432,255 +479,284 @@
       }
     }
 
+    /* Quick Actions */
+    .quick-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .action-btn {
+      padding: 8px 15px;
+      background: rgba(0, 255, 0, 0.1);
+      border: 1px solid #00ff00;
+      border-radius: 3px;
+      color: #00ff00;
+      cursor: pointer;
+      font-family: monospace;
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+
+    .action-btn:hover {
+      background: rgba(0, 255, 0, 0.2);
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+    }
+
     /* Responsive */
+    @media (max-width: 1200px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+
+      .watchlist-panel {
+        position: static;
+        max-height: none;
+      }
+    }
+
     @media (max-width: 768px) {
       .cards-grid {
         grid-template-columns: 1fr;
       }
 
-      header {
+      .header-top {
         flex-direction: column;
-        gap: 15px;
         align-items: flex-start;
+        gap: 15px;
       }
 
-      .btn-run {
-        align-self: flex-start;
+      .header-controls {
+        width: 100%;
       }
 
-      .thesis-score-value {
-        font-size: 36px;
+      .ticker-input {
+        min-width: 100%;
       }
+    }
+
+    .hidden {
+      display: none !important;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Header -->
-    <header>
-      <div class="header-left">
-        <h1>TTD Trade Thesis Monitor</h1>
-        <div class="header-badges">
-          <span class="badge">NASDAQ:TTD</span>
-          <span class="badge" id="status-badge">Ready</span>
+    <div class="main-content">
+      <!-- Header -->
+      <header>
+        <div class="header-top">
+          <div>
+            <h1>Stock Thesis Monitor</h1>
+            <div class="header-badges">
+              <span class="badge" id="status-badge">Ready</span>
+              <span class="badge" id="mode-badge">Single Stock</span>
+            </div>
+          </div>
         </div>
-      </div>
-      <button class="btn-run" id="btn-run" onclick="runAnalysis()">Run Analysis</button>
-    </header>
+        <div class="header-controls">
+          <div class="mode-selector">
+            <button class="mode-btn active" onclick="setMode('single')">Single Stock</button>
+            <button class="mode-btn" onclick="setMode('compare')">Compare</button>
+            <button class="mode-btn" onclick="setMode('portfolio')">Portfolio</button>
+          </div>
+          <input type="text" class="ticker-input" id="ticker-input" 
+                 placeholder="Enter ticker(s) e.g. TSLA, NVDA, AAPL" value="TTD">
+          <button class="btn-run" id="btn-run" onclick="runAnalysis()">Run Analysis</button>
+        </div>
+      </header>
 
-    <!-- Error Message -->
-    <div class="error-message" id="error-message"></div>
+      <!-- Error Message -->
+      <div class="error-message" id="error-message"></div>
 
-    <!-- Thesis Score Banner -->
-    <div class="thesis-score-banner" id="thesis-banner">
-      <div class="thesis-score-label">OVERALL THESIS SCORE</div>
-      <div class="thesis-score-value" id="thesis-score">--/10</div>
-    </div>
-
-    <!-- Monitoring Cards -->
-    <div class="cards-grid" id="cards-grid">
-      <!-- Stock Performance Card -->
-      <div class="card">
-        <div class="card-title">
-          <span>Stock Performance</span>
-          <span class="status-chip status-green" id="stock-status">Loading</span>
-        </div>
-        <div id="stock-content">
-          <div class="skeleton skeleton-text"></div>
-          <div class="skeleton skeleton-bar"></div>
-        </div>
-      </div>
-
-      <!-- Customer Retention Card -->
-      <div class="card">
-        <div class="card-title">
-          <span>Customer Retention</span>
-          <span class="status-chip status-green" id="retention-status">Loading</span>
-        </div>
-        <div id="retention-content">
-          <div class="skeleton skeleton-text"></div>
-          <div class="skeleton skeleton-bar"></div>
-        </div>
-      </div>
-
-      <!-- Gross Ad Spend Card -->
-      <div class="card">
-        <div class="card-title">
-          <span>Gross Ad Spend</span>
-          <span class="status-chip status-green" id="gaas-status">Loading</span>
-        </div>
-        <div id="gaas-content">
-          <div class="skeleton skeleton-text"></div>
-          <div class="skeleton skeleton-bar"></div>
-        </div>
-      </div>
-
-      <!-- Digital Ad Market Card -->
-      <div class="card">
-        <div class="card-title">
-          <span>Digital Ad Market</span>
-          <span class="status-chip status-green" id="market-status">Loading</span>
-        </div>
-        <div id="market-content">
-          <div class="skeleton skeleton-text"></div>
-          <div class="skeleton skeleton-bar"></div>
-        </div>
-      </div>
-
-      <!-- News Feed Card -->
-      <div class="card">
-        <div class="card-title">
-          <span>News Feed</span>
-          <span class="status-chip status-green" id="news-status">Loading</span>
-        </div>
-        <div id="news-content">
-          <div class="skeleton skeleton-text"></div>
-          <div class="skeleton skeleton-text"></div>
-        </div>
-      </div>
-
-      <!-- Thesis Scorecard Card -->
-      <div class="card">
-        <div class="card-title">
-          <span>Thesis Scorecard</span>
-          <span class="status-chip status-green" id="scorecard-status">Loading</span>
-        </div>
-        <div id="scorecard-content">
-          <div class="skeleton skeleton-text"></div>
-          <div class="skeleton skeleton-bar"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- AI Summary Section -->
-    <div class="ai-summary-section" id="ai-summary">
-      <div class="summary-title">
-        AI Analysis Summary
-        <span class="loading-indicator" id="loading-indicator" style="display: none;"></span>
-      </div>
-      <div class="summary-content" id="summary-text">
-        <!-- Summary will be populated here -->
-      </div>
+      <!-- Quick Actions -->
       <div class="quick-actions">
-        <button class="action-btn" onclick="copyAnalysis()">Copy Analysis</button>
-        <button class="action-btn" onclick="exportData()">Export Data</button>
-        <button class="action-btn" onclick="shareReport()">Share Report</button>
+        <button class="action-btn" onclick="saveAnalysis()">💾 Save Analysis</button>
+        <button class="action-btn" onclick="loadAnalysis()">📂 Load Previous</button>
+        <button class="action-btn" onclick="exportData()">📊 Export Data</button>
+        <button class="action-btn" onclick="shareReport()">🔗 Share Report</button>
+      </div>
+
+      <!-- Thesis Score Banner -->
+      <div class="thesis-score-banner" id="thesis-banner">
+        <div class="thesis-score-label" id="thesis-label">THESIS SCORE</div>
+        <div class="thesis-score-value" id="thesis-score">--/10</div>
+      </div>
+
+      <!-- Results Container (changes based on mode) -->
+      <div id="results-container">
+        <!-- Content will be dynamically inserted here -->
       </div>
     </div>
 
-    <!-- Scorecard Section -->
-    <div class="scorecard-section" id="scorecard-section">
-      <div class="scorecard-title">Detailed Scorecard</div>
-      <div id="scorecard-detailed">
-        <!-- Scorecard will be populated here -->
+    <!-- Watchlist Panel -->
+    <div class="watchlist-panel">
+      <div class="watchlist-title">📌 Watchlist</div>
+      <div class="watchlist-add">
+        <input type="text" id="watchlist-input" placeholder="AAPL">
+        <button onclick="addToWatchlist()">+</button>
+      </div>
+      <div id="watchlist-items">
+        <!-- Watchlist items will appear here -->
       </div>
     </div>
   </div>
 
   <script>
     const API_ENDPOINT = '/api/claude';
+    let currentMode = 'single';
+    let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+    let lastAnalysis = null;
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      renderWatchlist();
+      console.log('Stock Thesis Monitor initialized');
+    });
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('mode-badge').textContent = 
+        mode === 'single' ? 'Single Stock' : 
+        mode === 'compare' ? 'Compare' : 'Portfolio';
+      
+      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      // Update placeholder
+      const input = document.getElementById('ticker-input');
+      if (mode === 'single') {
+        input.placeholder = 'Enter ticker e.g. TSLA';
+      } else if (mode === 'compare') {
+        input.placeholder = 'Enter 2-4 tickers e.g. TSLA, NVDA';
+      } else {
+        input.placeholder = 'Enter tickers e.g. TSLA, NVDA, AAPL, MSFT';
+      }
+    }
 
     async function runAnalysis() {
       const btn = document.getElementById('btn-run');
       const errorMsg = document.getElementById('error-message');
       const statusBadge = document.getElementById('status-badge');
+      const tickerInput = document.getElementById('ticker-input').value.trim();
 
-      // Clear previous error
+      if (!tickerInput) {
+        errorMsg.textContent = 'Please enter at least one ticker symbol';
+        errorMsg.classList.add('show');
+        return;
+      }
+
       errorMsg.classList.remove('show');
-      errorMsg.textContent = '';
-
-      // Disable button
       btn.disabled = true;
       statusBadge.textContent = 'Analyzing...';
 
       try {
-        // Show loading indicators
-        showLoadingState();
-
-        // Define 5 parallel queries
-        const queries = [
-          {
-            title: 'Stock Performance',
-            id: 'stock',
-            prompt: 'Search for recent TTD (The Trade Desk) stock price performance, movement, and technical analysis. Provide key metrics and sentiment.'
-          },
-          {
-            title: 'Customer Retention',
-            id: 'retention',
-            prompt: 'Search for The Trade Desk customer retention rates, churn metrics, and enterprise client satisfaction data. Focus on recent quarters.'
-          },
-          {
-            title: 'Gross Ad Spend',
-            id: 'gaas',
-            prompt: 'Search for global gross ad spend trends, market growth rates, and digital advertising expenditure forecasts for 2025-2026.'
-          },
-          {
-            title: 'Digital Ad Market',
-            id: 'market',
-            prompt: 'Search for digital advertising market trends, programmatic advertising growth, CTV (connected TV) adoption, and retail media expansion.'
-          },
-          {
-            title: 'News Feed',
-            id: 'news',
-            prompt: 'Search for recent news about The Trade Desk (TTD), earnings reports, product announcements, and industry developments.'
-          }
-        ];
-
-        // Run 5 parallel fetch calls
-        const promises = queries.map(query => 
-          fetchAnalysis(query.prompt, query.id, query.title)
-        );
-
-        const results = await Promise.all(promises);
-
-        // Aggregate results
-        let overallScore = 0;
-        let scorecardData = {};
-        let summaryText = '';
-
-        results.forEach(result => {
-          if (result.score !== undefined) {
-            overallScore += result.score / 5;
-          }
-          if (result.scorecardData) {
-            scorecardData = { ...scorecardData, ...result.scorecardData };
-          }
-          if (result.summary) {
-            summaryText += result.summary + '\n\n';
-          }
-        });
-
-        // Display overall thesis score
-        const thesisBanner = document.getElementById('thesis-banner');
-        document.getElementById('thesis-score').textContent = Math.round(overallScore) + '/10';
-        thesisBanner.classList.add('show');
-
-        // Display AI summary
-        displayAISummary(summaryText, overallScore);
-
-        // Display scorecard if available
-        if (Object.keys(scorecardData).length > 0) {
-          displayScorecard(scorecardData);
+        const tickers = tickerInput.split(',').map(t => t.trim().toUpperCase()).filter(t => t);
+        
+        if (currentMode === 'single') {
+          await runSingleStockAnalysis(tickers[0]);
+        } else if (currentMode === 'compare') {
+          await runCompareAnalysis(tickers.slice(0, 4));
+        } else {
+          await runPortfolioAnalysis(tickers);
         }
 
         statusBadge.textContent = 'Complete';
       } catch (error) {
         console.error('Analysis error:', error);
-        errorMsg.innerHTML = `<strong>Error:</strong> ${escapeHtml(error.message)}<br><br>Check console (F12) for details.`;
+        errorMsg.innerHTML = `<strong>Error:</strong> ${escapeHtml(error.message)}`;
         errorMsg.classList.add('show');
         statusBadge.textContent = 'Error';
-        
-        // Also show error in all card status chips
-        document.querySelectorAll('[id$="-status"]').forEach(chip => {
-          chip.textContent = 'Error';
-          chip.className = 'status-chip status-red';
-        });
       } finally {
         btn.disabled = false;
       }
     }
 
-    async function fetchAnalysis(prompt, cardId, cardTitle) {
+    async function runSingleStockAnalysis(ticker) {
+      const queries = [
+        {
+          id: 'overview',
+          prompt: `Search for ${ticker} stock price, YTD performance, market cap, and current sentiment. Provide key metrics.`
+        },
+        {
+          id: 'financials',
+          prompt: `Search for ${ticker} recent earnings, revenue growth, profit margins, and financial health metrics.`
+        },
+        {
+          id: 'insider',
+          prompt: `Search for ${ticker} recent insider transactions. Include names, transaction types, amounts, and dates. Calculate net insider sentiment.`
+        },
+        {
+          id: 'earnings',
+          prompt: `Search for ${ticker} last 6 quarters EPS: estimated vs actual. Calculate beat rate and average surprise percentage.`
+        },
+        {
+          id: 'short',
+          prompt: `Search for ${ticker} short interest percentage, days to cover, and squeeze potential.`
+        },
+        {
+          id: 'catalyst',
+          prompt: `Search for ${ticker} next earnings date, upcoming catalysts, analyst consensus, and price targets.`
+        },
+        {
+          id: 'risks',
+          prompt: `Search for ${ticker} key investment risks, headwinds, regulatory concerns, and competitive threats.`
+        },
+        {
+          id: 'news',
+          prompt: `Search for recent news about ${ticker} stock, earnings, announcements, and analyst ratings.`
+        }
+      ];
+
+      const promises = queries.map(q => fetchAnalysis(q.prompt, ticker));
+      const results = await Promise.all(promises);
+
+      // Calculate overall score
+      const scores = results.map(r => r.score).filter(s => s > 0);
+      const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+
+      // Display results
+      displaySingleStockResults(ticker, results, avgScore);
+
+      // Save to history
+      lastAnalysis = { mode: 'single', ticker, results, score: avgScore, timestamp: new Date().toISOString() };
+      updateWatchlistScore(ticker, avgScore);
+    }
+
+    async function runCompareAnalysis(tickers) {
+      if (tickers.length < 2) {
+        throw new Error('Please enter at least 2 tickers to compare');
+      }
+
+      const results = [];
+      for (const ticker of tickers) {
+        const prompt = `Search for ${ticker} stock: current price, YTD%, thesis score 0-10, key catalyst, key risk. Be concise.`;
+        const result = await fetchAnalysis(prompt, ticker);
+        results.push({ ticker, ...result });
+      }
+
+      displayCompareResults(results);
+      lastAnalysis = { mode: 'compare', tickers, results, timestamp: new Date().toISOString() };
+    }
+
+    async function runPortfolioAnalysis(tickers) {
+      if (tickers.length < 1) {
+        throw new Error('Please enter at least 1 ticker');
+      }
+
+      const results = [];
+      for (const ticker of tickers) {
+        const prompt = `Search for ${ticker} stock: current price, YTD performance %, thesis score 0-10, bull or bear rating, key risk. Be concise.`;
+        const result = await fetchAnalysis(prompt, ticker);
+        results.push({ ticker, ...result });
+      }
+
+      displayPortfolioResults(results);
+      lastAnalysis = { mode: 'portfolio', tickers, results, timestamp: new Date().toISOString() };
+    }
+
+    async function fetchAnalysis(prompt, ticker) {
       try {
         const response = await fetch(API_ENDPOINT, {
           method: 'POST',
@@ -688,7 +764,7 @@
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            system: 'You are a financial analyst for The Trade Desk (TTD). Provide concise, data-driven analysis with specific metrics when available. Keep responses focused and actionable.',
+            system: 'You are a financial analyst. Provide concise, data-driven analysis. Keep responses focused and under 200 words.',
             messages: [
               {
                 role: 'user',
@@ -700,274 +776,337 @@
 
         const data = await response.json();
         
-        // Check for errors in response
         if (!response.ok || data.error) {
-          const errorMsg = data.error || data.details || `API error ${response.status}`;
-          throw new Error(errorMsg);
+          throw new Error(data.error || `API error ${response.status}`);
         }
 
-        const analysisText = data.text || '';
+        const text = data.text || '';
+        const score = calculateScore(text);
 
-        // Parse response and update card
-        const { content, status, score, metrics, news, pillars } = parseAnalysisResponse(analysisText, cardId);
-
-        // Update card UI
-        updateCardUI(cardId, content, status, metrics, news);
-
-        // Return data for aggregation
         return {
-          score: score || 7,
-          summary: extractSummary(analysisText),
-          scorecardData: pillars ? { [cardId]: { score, metrics: pillars } } : {}
+          text,
+          score,
+          timestamp: new Date().toISOString()
         };
       } catch (error) {
-        console.error(`Error fetching ${cardId}:`, error);
-        updateCardError(cardId, error.message);
-        return { score: 0, summary: '', scorecardData: {} };
+        console.error(`Error fetching ${ticker}:`, error);
+        return {
+          text: `Error: ${error.message}`,
+          score: 0,
+          error: true
+        };
       }
     }
 
-    function parseAnalysisResponse(text, cardId) {
-      // Extract metrics from response text
-      const content = text;
-      let status = 'green';
-      let score = 7;
-      let metrics = [];
-      let news = [];
-      let pillars = null;
-
-      // Simple heuristics for status and score
-      if (text.toLowerCase().includes('decline') || text.toLowerCase().includes('negative') || text.toLowerCase().includes('down')) {
-        status = 'red';
-        score = 4;
-      } else if (text.toLowerCase().includes('stable') || text.toLowerCase().includes('moderate') || text.toLowerCase().includes('neutral')) {
-        status = 'yellow';
-        score = 6;
-      } else if (text.toLowerCase().includes('growth') || text.toLowerCase().includes('positive') || text.toLowerCase().includes('strong')) {
-        status = 'green';
-        score = 8;
-      }
-
-      // Extract metrics (mock parsing - in real app, would be more sophisticated)
-      if (cardId === 'stock') {
-        metrics = [
-          { label: 'Price Movement', value: '5-15%' },
-          { label: 'Volume Trend', value: 'Strong' }
-        ];
-      } else if (cardId === 'retention') {
-        metrics = [
-          { label: 'Net Retention Rate', value: '110-120%' },
-          { label: 'Churn Rate', value: '<5%' }
-        ];
-      } else if (cardId === 'gaas') {
-        metrics = [
-          { label: 'YoY Growth', value: '8-12%' },
-          { label: 'Market Forecast', value: '2025+' }
-        ];
-      } else if (cardId === 'market') {
-        metrics = [
-          { label: 'Programmatic Shift', value: '60-70%' },
-          { label: 'CTV Growth', value: '20-30%' }
-        ];
-      } else if (cardId === 'news') {
-        news = extractNewsItems(text);
-      }
-
-      pillars = {
-        'Technology': score,
-        'Market': score + (Math.random() - 0.5) * 2,
-        'Execution': score,
-        'Valuation': score - 1
-      };
-
-      return { content, status, score, metrics, news, pillars };
+    function calculateScore(text) {
+      let score = 5;
+      const lower = text.toLowerCase();
+      
+      if (lower.includes('strong') || lower.includes('bullish') || lower.includes('buy')) score += 2;
+      if (lower.includes('growth') || lower.includes('positive') || lower.includes('outperform')) score += 1;
+      if (lower.includes('decline') || lower.includes('bearish') || lower.includes('sell')) score -= 2;
+      if (lower.includes('risk') || lower.includes('concern') || lower.includes('underperform')) score -= 1;
+      
+      return Math.max(0, Math.min(10, score));
     }
 
-    function extractNewsItems(text) {
-      // Mock news extraction
-      const sentences = text.split('.').slice(0, 3);
-      return sentences.map((sentence, idx) => ({
-        title: sentence.trim().substring(0, 80),
-        sentiment: ['bullish', 'neutral', 'bearish'][idx % 3]
-      })).filter(item => item.title.length > 10);
-    }
+    function displaySingleStockResults(ticker, results, avgScore) {
+      const container = document.getElementById('results-container');
+      const thesisBanner = document.getElementById('thesis-banner');
+      const thesisLabel = document.getElementById('thesis-label');
+      const thesisScore = document.getElementById('thesis-score');
 
-    function extractSummary(text) {
-      // Return first 200 characters as summary
-      return text.substring(0, 500) || 'Analysis complete. Check individual cards for details.';
-    }
+      thesisLabel.textContent = `${ticker} THESIS SCORE`;
+      thesisScore.textContent = Math.round(avgScore) + '/10';
+      thesisBanner.classList.add('show');
 
-    function updateCardUI(cardId, content, status, metrics, news) {
-      const statusMap = { 'green': 'Bullish', 'yellow': 'Neutral', 'red': 'Bearish' };
-      const statusChip = document.getElementById(`${cardId}-status`);
-      const contentDiv = document.getElementById(`${cardId}-content`);
-
-      if (statusChip) {
-        statusChip.textContent = statusMap[status];
-        statusChip.className = `status-chip status-${status}`;
-      }
-
-      let html = '';
-
-      if (cardId === 'news') {
-        html = news.map(item => `
-          <div class="news-item">
-            <div class="news-header">
-              <div class="news-title">${escapeHtml(item.title)}</div>
-              <span class="sentiment-badge sentiment-${item.sentiment}">${item.sentiment.toUpperCase()}</span>
+      let html = '<div class="cards-grid">';
+      const cardTitles = ['Overview', 'Financials', 'Insider Activity', 'Earnings History', 'Short Interest', 'Catalysts', 'Risks', 'News'];
+      
+      results.forEach((result, idx) => {
+        const statusClass = result.score >= 7 ? 'green' : result.score >= 5 ? 'yellow' : 'red';
+        const statusText = result.score >= 7 ? 'Bullish' : result.score >= 5 ? 'Neutral' : 'Bearish';
+        
+        html += `
+          <div class="card">
+            <div class="card-title">
+              <span>${cardTitles[idx]}</span>
+              <span class="status-chip status-${statusClass}">${statusText}</span>
+            </div>
+            <div style="color: #00ff00; font-size: 13px; line-height: 1.6;">
+              ${escapeHtml(result.text.substring(0, 400))}
             </div>
           </div>
-        `).join('');
-      } else {
-        html = `<p style="margin-bottom: 15px; color: #00ff00;">${escapeHtml(content.substring(0, 300))}</p>`;
-        metrics.forEach((metric, idx) => {
-          const percentage = (50 + Math.random() * 40);
-          html += `
+        `;
+      });
+      html += '</div>';
+      
+      container.innerHTML = html;
+    }
+
+    function displayCompareResults(results) {
+      const container = document.getElementById('results-container');
+      const thesisBanner = document.getElementById('thesis-banner');
+      
+      thesisBanner.classList.remove('show');
+
+      let html = '<div class="compare-grid">';
+      
+      results.forEach(result => {
+        const scoreClass = result.score >= 7 ? 'green' : result.score >= 5 ? 'yellow' : 'red';
+        html += `
+          <div class="compare-card">
+            <div class="compare-ticker">${result.ticker}</div>
             <div class="metric">
               <div class="metric-label">
-                <span>${escapeHtml(metric.label)}</span>
-                <span class="metric-value">${escapeHtml(metric.value)}</span>
+                <span>Thesis Score</span>
+                <span class="metric-value status-${scoreClass}">${result.score}/10</span>
               </div>
               <div class="progress-bar">
-                <div class="progress-fill" style="width: ${percentage}%"></div>
+                <div class="progress-fill" style="width: ${result.score * 10}%"></div>
               </div>
             </div>
-          `;
-        });
-      }
-
-      if (contentDiv) {
-        contentDiv.innerHTML = html;
-      }
-    }
-
-    function updateCardError(cardId, errorMessage) {
-      const statusChip = document.getElementById(`${cardId}-status`);
-      const contentDiv = document.getElementById(`${cardId}-content`);
-
-      if (statusChip) {
-        statusChip.textContent = 'Error';
-        statusChip.className = 'status-chip status-red';
-      }
-
-      if (contentDiv) {
-        contentDiv.innerHTML = `<p style="color: #ff4444;">Error: ${escapeHtml(errorMessage)}</p>`;
-      }
-    }
-
-    function showLoadingState() {
-      // Show skeleton loaders in all cards
-      document.querySelectorAll('.card').forEach(card => {
-        const titleSpan = card.querySelector('.card-title span');
-        if (titleSpan) {
-          // Skeleton loader is already shown by default
-        }
-      });
-    }
-
-    function displayAISummary(summaryText, score) {
-      const aiSummarySection = document.getElementById('ai-summary');
-      const summaryContentDiv = document.getElementById('summary-text');
-
-      summaryContentDiv.innerHTML = `<p>${escapeHtml(summaryText.substring(0, 800))}</p>`;
-      aiSummarySection.classList.add('show');
-    }
-
-    function displayScorecard(scorecardData) {
-      const scorecardSection = document.getElementById('scorecard-section');
-      const scorecardDetailed = document.getElementById('scorecard-detailed');
-
-      let html = '';
-      let totalScore = 0;
-      let pillarCount = 0;
-
-      Object.entries(scorecardData).forEach(([cardId, data]) => {
-        if (data.metrics) {
-          Object.entries(data.metrics).forEach(([pillarName, score]) => {
-            totalScore += score;
-            pillarCount++;
-            const percentage = (score / 10) * 100;
-            html += `
-              <div class="pillar">
-                <div class="pillar-name">
-                  <span>${escapeHtml(pillarName)}</span>
-                  <span class="pillar-score">${score.toFixed(1)}/10</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: ${percentage}%"></div>
-                </div>
-              </div>
-            `;
-          });
-        }
-      });
-
-      if (pillarCount === 0) {
-        // Create default scorecards
-        const pillars = ['Technology', 'Market Position', 'Financial Health', 'Growth Potential'];
-        pillars.forEach(pillar => {
-          const score = 7 + Math.random() * 2;
-          const percentage = (score / 10) * 100;
-          html += `
-            <div class="pillar">
-              <div class="pillar-name">
-                <span>${pillar}</span>
-                <span class="pillar-score">${score.toFixed(1)}/10</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: ${percentage}%"></div>
-              </div>
+            <div style="color: #00ff00; font-size: 12px; margin-top: 10px; line-height: 1.5;">
+              ${escapeHtml(result.text.substring(0, 300))}
             </div>
-          `;
-        });
+          </div>
+        `;
+      });
+      html += '</div>';
+
+      // Find strongest ticker
+      const strongest = results.reduce((max, r) => r.score > max.score ? r : max, results[0]);
+      html += `<div class="card" style="text-align: center;">
+        <div class="card-title">Winner</div>
+        <div style="font-size: 24px; color: #00ff00; font-weight: bold;">
+          Strongest Thesis: ${strongest.ticker} (${strongest.score}/10)
+        </div>
+      </div>`;
+
+      container.innerHTML = html;
+    }
+
+    function displayPortfolioResults(results) {
+      const container = document.getElementById('results-container');
+      const thesisBanner = document.getElementById('thesis-banner');
+      const thesisLabel = document.getElementById('thesis-label');
+      const thesisScore = document.getElementById('thesis-score');
+
+      const avgScore = results.reduce((sum, r) => sum + r.score, 0) / results.length;
+      thesisLabel.textContent = 'PORTFOLIO THESIS SCORE';
+      thesisScore.textContent = Math.round(avgScore) + '/10';
+      thesisBanner.classList.add('show');
+
+      let html = `
+        <div class="card">
+          <div class="card-title">Portfolio Analysis</div>
+          <table class="portfolio-table">
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Score</th>
+                <th>Rating</th>
+                <th>Key Insight</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      results.forEach(result => {
+        const rating = result.score >= 7 ? '🟢 Bullish' : result.score >= 5 ? '🟡 Neutral' : '🔴 Bearish';
+        const insight = result.text.substring(0, 100) + '...';
+        html += `
+          <tr>
+            <td style="font-weight: bold;">${result.ticker}</td>
+            <td style="font-weight: bold;">${result.score}/10</td>
+            <td>${rating}</td>
+            <td style="font-size: 11px;">${escapeHtml(insight)}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      // Portfolio summary
+      const strongest = results.reduce((max, r) => r.score > max.score ? r : max, results[0]);
+      const weakest = results.reduce((min, r) => r.score < min.score ? r : min, results[0]);
+      const riskLevel = avgScore >= 7 ? 'LOW' : avgScore >= 5 ? 'MODERATE' : 'HIGH';
+      const riskColor = avgScore >= 7 ? '#00ff00' : avgScore >= 5 ? '#ffc800' : '#ff4444';
+
+      html += `
+        <div class="card">
+          <div class="card-title">Portfolio Summary</div>
+          <div class="metric">
+            <div class="metric-label">
+              <span>Strongest Position</span>
+              <span class="metric-value">${strongest.ticker} (${strongest.score}/10)</span>
+            </div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">
+              <span>Weakest Position</span>
+              <span class="metric-value">${weakest.ticker} (${weakest.score}/10)</span>
+            </div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">
+              <span>Portfolio Risk Level</span>
+              <span class="metric-value" style="color: ${riskColor};">${riskLevel}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    function addToWatchlist() {
+      const input = document.getElementById('watchlist-input');
+      const ticker = input.value.trim().toUpperCase();
+      
+      if (ticker && !watchlist.find(w => w.ticker === ticker)) {
+        watchlist.push({ ticker, score: null, lastAnalyzed: null });
+        localStorage.setItem('watchlist', JSON.stringify(watchlist));
+        renderWatchlist();
+        input.value = '';
+      }
+    }
+
+    function removeFromWatchlist(ticker) {
+      watchlist = watchlist.filter(w => w.ticker !== ticker);
+      localStorage.setItem('watchlist', JSON.stringify(watchlist));
+      renderWatchlist();
+    }
+
+    function updateWatchlistScore(ticker, score) {
+      const item = watchlist.find(w => w.ticker === ticker);
+      if (item) {
+        item.score = Math.round(score);
+        item.lastAnalyzed = new Date().toISOString();
+        localStorage.setItem('watchlist', JSON.stringify(watchlist));
+        renderWatchlist();
+      }
+    }
+
+    function renderWatchlist() {
+      const container = document.getElementById('watchlist-items');
+      if (watchlist.length === 0) {
+        container.innerHTML = '<p style="color: #00ff00; opacity: 0.5; font-size: 12px; text-align: center;">No tickers yet</p>';
+        return;
       }
 
-      scorecardDetailed.innerHTML = html;
-      scorecardSection.classList.add('show');
+      container.innerHTML = watchlist.map(item => `
+        <div class="watchlist-item" onclick="selectWatchlistTicker('${item.ticker}')">
+          <div>
+            <div class="watchlist-ticker">${item.ticker}</div>
+            <div class="watchlist-score">${item.score !== null ? item.score + '/10' : '--'}</div>
+          </div>
+          <span class="watchlist-remove" onclick="event.stopPropagation(); removeFromWatchlist('${item.ticker}')">×</span>
+        </div>
+      `).join('');
     }
 
-    function copyAnalysis() {
-      const summaryText = document.getElementById('summary-text').innerText;
-      navigator.clipboard.writeText(summaryText).then(() => {
-        alert('Analysis copied to clipboard!');
-      }).catch(() => {
-        alert('Failed to copy analysis');
-      });
+    function selectWatchlistTicker(ticker) {
+      document.getElementById('ticker-input').value = ticker;
+      setMode('single');
+      runAnalysis();
     }
 
-    function exportData() {
-      const timestamp = new Date().toISOString();
-      const score = document.getElementById('thesis-score').innerText;
-      const summary = document.getElementById('summary-text').innerText;
+    function saveAnalysis() {
+      if (!lastAnalysis) {
+        alert('No analysis to save. Run an analysis first.');
+        return;
+      }
 
-      const data = {
-        timestamp,
-        thesisScore: score,
-        analysis: summary,
-        exportedAt: new Date().toLocaleString()
-      };
-
-      const json = JSON.stringify(data, null, 2);
+      const json = JSON.stringify(lastAnalysis, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `TTD-Analysis-${Date.now()}.json`;
+      link.download = `Stock-Analysis-${Date.now()}.json`;
       link.click();
       URL.revokeObjectURL(url);
     }
 
+    function loadAnalysis() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const text = await file.text();
+          const data = JSON.parse(text);
+          
+          // Restore the analysis
+          lastAnalysis = data;
+          currentMode = data.mode;
+          
+          if (data.mode === 'single') {
+            displaySingleStockResults(data.ticker, data.results, data.score);
+          } else if (data.mode === 'compare') {
+            displayCompareResults(data.results);
+          } else {
+            displayPortfolioResults(data.results);
+          }
+
+          document.getElementById('status-badge').textContent = 'Loaded';
+        }
+      };
+      input.click();
+    }
+
+    function exportData() {
+      if (!lastAnalysis) {
+        alert('No analysis to export. Run an analysis first.');
+        return;
+      }
+
+      const csv = convertToCSV(lastAnalysis);
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Stock-Data-${Date.now()}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function convertToCSV(analysis) {
+      if (analysis.mode === 'portfolio' || analysis.mode === 'compare') {
+        let csv = 'Ticker,Score,Text\n';
+        analysis.results.forEach(r => {
+          csv += `"${r.ticker}",${r.score},"${r.text.replace(/"/g, '""')}"\n`;
+        });
+        return csv;
+      } else {
+        let csv = 'Ticker,Overall Score,Timestamp\n';
+        csv += `"${analysis.ticker}",${analysis.score},"${analysis.timestamp}"\n`;
+        return csv;
+      }
+    }
+
     function shareReport() {
-      const score = document.getElementById('thesis-score').innerText;
-      const text = `TTD Trade Thesis Monitor Report\nOverall Score: ${score}\n${window.location.href}`;
+      if (!lastAnalysis) {
+        alert('No analysis to share. Run an analysis first.');
+        return;
+      }
+
+      const text = `Stock Thesis Monitor Report\n${currentMode === 'single' ? 'Ticker: ' + lastAnalysis.ticker + '\nScore: ' + Math.round(lastAnalysis.score) + '/10' : 'Mode: ' + currentMode}\n${window.location.href}`;
       
       if (navigator.share) {
         navigator.share({
-          title: 'TTD Trade Thesis Monitor',
+          title: 'Stock Thesis Monitor',
           text: text
         }).catch(err => console.log('Share error:', err));
       } else {
-        alert('Share this report:\n\n' + text);
+        navigator.clipboard.writeText(text).then(() => {
+          alert('Share link copied to clipboard!');
+        });
       }
     }
 
@@ -976,12 +1115,6 @@
       div.textContent = text;
       return div.innerHTML;
     }
-
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('TTD Trade Thesis Monitor initialized');
-      // You can add initial setup here
-    });
   </script>
 </body>
 </html>
