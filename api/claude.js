@@ -32,7 +32,7 @@ module.exports = async (req, res) => {
         'anthropic-beta': 'web-search-2025-03-05'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1000,
         system: system || '',
         messages: [{ role: 'user', content: messageContent }],
