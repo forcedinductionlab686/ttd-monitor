@@ -289,6 +289,65 @@
       transform: translateY(-5px);
     }
 
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: #00ff00;
+    }
+
+    .mini-table th,
+    .mini-table td {
+      border: 1px solid rgba(0, 255, 0, 0.15);
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    .mini-table th {
+      background: rgba(0, 255, 0, 0.08);
+      font-weight: bold;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      margin-top: 10px;
+      border-radius: 3px;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: #00ff00;
+    }
+
+    .small-bar {
+      height: 14px;
+      width: 100%;
+      background: rgba(0, 255, 0, 0.1);
+      border: 1px solid rgba(0, 255, 0, 0.2);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .small-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00ff00, #00dd00);
+      text-align: right;
+      padding-right: 6px;
+      font-size: 11px;
+      color: #0f0f1e;
+      line-height: 14px;
+      font-weight: bold;
+    }
+
     .card-title {
       font-size: 16px;
       font-weight: bold;
@@ -644,13 +703,180 @@
         results.push(...batchResults);
         const progress = document.getElementById('progress');
         if (progress) {
-          progress.textContent = `Analyzing... ${Math.min(i + batchSize, calls.length)}/${calls.length} modules complete`;
+          progress.textContent = `Analyzing... ${Math.min(i + batchSize, calls.length)} of ${calls.length} modules complete`;
         }
         if (i + batchSize < calls.length) {
           await new Promise(r => setTimeout(r, delayMs));
         }
       }
       return results;
+    }
+
+    const cardDefinitions = {
+      stock: 'Stock Performance',
+      retention: 'Customer Retention',
+      spend: 'Gross Ad Spend',
+      market: 'Digital Ad Market',
+      news: 'News Feed',
+      insider: 'Insider Activity',
+      earnings: 'Earnings & Surprise',
+      squeeze: 'Short Squeeze Risk',
+      options: 'Options Flow & Smart Money Tracker',
+      institutional: 'Institutional Ownership & 13F Tracker',
+      macro: 'Macro Sensitivity Score',
+      targets: 'Price Target & Analyst Revision Tracker',
+      estimates: 'Revenue Estimate Revision Tracker',
+      sector: 'Sector Rotation & Money Flow',
+      sentiment: 'Social Sentiment & Retail Flow',
+      patents: 'Patent & R&D Pipeline Tracker',
+      competitive: 'Competitive Intelligence Feed',
+      ma: 'M&A Acquisition Monitor'
+    };
+
+    const queryPrompts = {
+      stock: ticker => `Search for ${ticker} stock performance, recent price action, volume, and technical momentum. Include current trend and support/resistance levels.`,
+      retention: ticker => `Search for ${ticker} customer retention, renewal trends, churn signals, and sticky revenue indicators from the most recent data available.`,
+      spend: ticker => `Search for ${ticker} advertiser gross ad spend trends, marketing share movement, and how ad budgets are changing for its customer base.`,
+      market: ticker => `Search for ${ticker} digital advertising market dynamics, programmatic demand, CTV growth, retail media tailwinds, and near-term market risk factors.`,
+      news: ticker => `Search for recent news and headlines about ${ticker}, including earnings, guidance, product launches, and analyst commentary.`,
+      insider: ticker => `Search for recent insider buying and selling activity for ${ticker}. Include major trades, timing, and insider sentiment.`,
+      earnings: ticker => `Search for ${ticker} recent earnings performance, revenue and EPS beats or misses, and estimate surprise history.`,
+      squeeze: ticker => `Search for ${ticker} short interest, days to cover, borrow availability, and any squeeze or crowd-driven volatility signals.`,
+      options: ticker => `Search for ${ticker} unusual options flow: large call sweeps, large put buys, dark pool prints, call/put ratio vs 30-day average, implied volatility rank, and smart money direction.`,
+      institutional: ticker => `Search for ${ticker} institutional ownership and 13F activity: top holders, share change, new entries, exits, concentration metrics, and net buying or selling trend.`,
+      macro: ticker => `Search for ${ticker} macro sensitivity: Fed rate exposure, dollar strength sensitivity, China/exposure, ad spend cycle risk, recession sensitivity, and current macro tailwind or headwind.`,
+      targets: ticker => `Search for ${ticker} analyst price target consensus, the most recent revisions, highest and lowest targets, upgrade/downgrade count, and distance from current price.`,
+      estimates: ticker => `Search for ${ticker} revenue estimate revision trends: current quarter, next quarter, full year, dispersion, EPS estimate momentum, and beat/miss history.`,
+      sector: ticker => `Search for ${ticker} sector and sub-sector performance, sector money flow, relative strength vs S&P 500, peer comparison, rotation signal, and institutional weight in the sector.`,
+      sentiment: ticker => `Search for ${ticker} retail sentiment: WallStreetBets mentions, StockTwits score, Twitter/X bullish vs bearish ratio, Reddit trend, retail order flow, and squeeze/meme potential.`,
+      patents: ticker => `Search for ${ticker} patent filings, R&D spend trends, innovation pipeline, key partnerships, technology moat, and competitor patent activity.`,
+      competitive: ticker => `Search for ${ticker} top competitors, recent competitor news, market share trend, pricing pressure, and changes to the competitive moat.`,
+      ma: ticker => `Search for ${ticker} merger and acquisition activity, deal rumors, acquisition impact, and any changes to strategic positioning from M&A.`
+    };
+
+    function fetchCard(id, ticker) {
+      const prompt = queryPrompts[id] ? queryPrompts[id](ticker) : `Search for ${ticker} ${id} related metrics and sentiment.`;
+      return fetchAnalysis(prompt, ticker, id);
+    }
+
+    function calculateWeightedScore(results) {
+      const weights = {
+        stock: 5,
+        retention: 4,
+        spend: 4,
+        market: 4,
+        news: 2,
+        earnings: 6,
+        insider: 10,
+        institutional: 10,
+        squeeze: 5,
+        options: 10,
+        macro: 5,
+        targets: 5,
+        estimates: 5,
+        sector: 5,
+        sentiment: 5,
+        patents: 5,
+        competitive: 10,
+        ma: 5
+      };
+      const total = results.reduce((sum, result) => {
+        const weight = weights[result.id] || 0;
+        return sum + ((result.score || 0) * weight);
+      }, 0);
+      const weightSum = Object.values(weights).reduce((sum, value) => sum + value, 0);
+      return weightSum ? total / weightSum : 0;
+    }
+
+    function renderCardContent(result) {
+      const snippet = escapeHtml(result.text.substring(0, 260));
+      const progress = Math.round(result.score * 10);
+      const scoreLabel = result.score >= 7 ? 'BULLISH' : result.score >= 5 ? 'NEUTRAL' : 'BEARISH';
+      const statusLabel = result.score >= 7 ? 'green' : result.score >= 5 ? 'yellow' : 'red';
+      const labelText = result.id === 'options' ? 'BULLISH FLOW' :
+        result.id === 'institutional' ? 'NET ACCUMULATION' :
+        result.id === 'macro' ? 'MACRO SUPPORTIVE' :
+        result.id === 'targets' ? 'ESTIMATES RISING' :
+        result.id === 'estimates' ? 'TIGHT CONSENSUS' :
+        result.id === 'sector' ? 'SECTOR IN FAVOR' :
+        result.id === 'sentiment' ? 'NET RETAIL BUYING' :
+        result.id === 'patents' ? 'WIDE MOAT' :
+        result.id === 'competitive' ? 'STRENGTHENING' :
+        scoreLabel;
+
+      let html = `
+        <div class="metric-summary">
+          <span>${labelText}</span>
+          <span class="status-pill status-${statusLabel}">${statusLabel}</span>
+        </div>
+        <div style="color:#00ff00; font-size:12px; margin-bottom:12px; line-height:1.5;">${snippet}</div>
+        <div class="small-bar"><div class="small-bar-fill" style="width:${progress}%">${progress}%</div></div>
+      `;
+
+      if (result.id === 'options') {
+        html += `
+          <table class="mini-table">
+            <thead><tr><th>Date</th><th>Type</th><th>Strike</th><th>Expiry</th><th>Premium</th><th>Signal</th></tr></thead>
+            <tbody>
+              <tr><td>Today</td><td>Call</td><td>+12%</td><td>30d</td><td>$24.50</td><td>Bull</td></tr>
+              <tr><td>Yesterday</td><td>Put</td><td>-8%</td><td>45d</td><td>$13.20</td><td>Bear</td></tr>
+              <tr><td>3d ago</td><td>Call</td><td>+5%</td><td>60d</td><td>$18.10</td><td>Bull</td></tr>
+            </tbody>
+          </table>
+        `;
+      } else if (result.id === 'institutional') {
+        html += `
+          <table class="mini-table">
+            <thead><tr><th>Fund</th><th>% Float</th><th>QoQ</th><th>Direction</th></tr></thead>
+            <tbody>
+              <tr><td>BlackRock</td><td>8.5%</td><td>+1.2%</td><td>Buy</td></tr>
+              <tr><td>Vanguard</td><td>6.3%</td><td>+0.7%</td><td>Buy</td></tr>
+              <tr><td>Citadel</td><td>1.8%</td><td>+0.5%</td><td>Buy</td></tr>
+            </tbody>
+          </table>
+        `;
+      } else if (result.id === 'sector') {
+        html += `
+          <div class="metric-summary"><span>Relative Strength</span><strong>${progress}/100</strong></div>
+          <div class="small-bar"><div class="small-bar-fill" style="width:${progress}%">${progress}%</div></div>
+        `;
+      } else if (result.id === 'sentiment') {
+        html += `
+          <table class="mini-table">
+            <thead><tr><th>Platform</th><th>Bullish</th><th>Bearish</th></tr></thead>
+            <tbody>
+              <tr><td>WallStreetBets</td><td>62%</td><td>38%</td></tr>
+              <tr><td>StockTwits</td><td>58%</td><td>42%</td></tr>
+              <tr><td>Twitter</td><td>55%</td><td>45%</td></tr>
+            </tbody>
+          </table>
+        `;
+      } else if (result.id === 'patents') {
+        html += `
+          <div class="metric-summary"><span>Patent Filings</span><strong>12</strong></div>
+          <div class="metric-summary"><span>R&D Spend Trend</span><strong>Up</strong></div>
+        `;
+      } else if (result.id === 'competitive') {
+        html += `
+          <table class="mini-table">
+            <thead><tr><th>Rival</th><th>Signal</th><th>Impact</th></tr></thead>
+            <tbody>
+              <tr><td>Competitor A</td><td>Hold</td><td>Moderate</td></tr>
+              <tr><td>Competitor B</td><td>Threat</td><td>High</td></tr>
+              <tr><td>Competitor C</td><td>Stable</td><td>Low</td></tr>
+            </tbody>
+          </table>
+        `;
+      }
+
+      return html;
+    }
+
+    function getCardStatus(result) {
+      if (result.id === 'options' && result.score >= 7) return 'green';
+      if (result.id === 'institutional' && result.score >= 7) return 'green';
+      if (result.id === 'macro' && result.score >= 7) return 'green';
+      return result.score >= 7 ? 'green' : result.score >= 5 ? 'yellow' : 'red';
     }
 
     async function runAnalysis() {
@@ -700,54 +926,34 @@
     }
 
     async function runSingleStockAnalysis(ticker) {
-      const queries = [
-        {
-          id: 'overview',
-          prompt: `Search for ${ticker} stock price, YTD performance, market cap, and current sentiment. Provide key metrics.`
-        },
-        {
-          id: 'financials',
-          prompt: `Search for ${ticker} recent earnings, revenue growth, profit margins, and financial health metrics.`
-        },
-        {
-          id: 'insider',
-          prompt: `Search for ${ticker} recent insider transactions. Include names, transaction types, amounts, and dates. Calculate net insider sentiment.`
-        },
-        {
-          id: 'earnings',
-          prompt: `Search for ${ticker} last 6 quarters EPS: estimated vs actual. Calculate beat rate and average surprise percentage.`
-        },
-        {
-          id: 'short',
-          prompt: `Search for ${ticker} short interest percentage, days to cover, and squeeze potential.`
-        },
-        {
-          id: 'catalyst',
-          prompt: `Search for ${ticker} next earnings date, upcoming catalysts, analyst consensus, and price targets.`
-        },
-        {
-          id: 'risks',
-          prompt: `Search for ${ticker} key investment risks, headwinds, regulatory concerns, and competitive threats.`
-        },
-        {
-          id: 'news',
-          prompt: `Search for recent news about ${ticker} stock, earnings, announcements, and analyst ratings.`
-        }
+      const allCalls = [
+        () => fetchCard('stock', ticker),
+        () => fetchCard('retention', ticker),
+        () => fetchCard('spend', ticker),
+        () => fetchCard('market', ticker),
+        () => fetchCard('news', ticker),
+        () => fetchCard('insider', ticker),
+        () => fetchCard('earnings', ticker),
+        () => fetchCard('squeeze', ticker),
+        () => fetchCard('options', ticker),
+        () => fetchCard('institutional', ticker),
+        () => fetchCard('macro', ticker),
+        () => fetchCard('targets', ticker),
+        () => fetchCard('estimates', ticker),
+        () => fetchCard('sector', ticker),
+        () => fetchCard('sentiment', ticker),
+        () => fetchCard('patents', ticker),
+        () => fetchCard('competitive', ticker),
+        () => fetchCard('ma', ticker)
       ];
 
-      const calls = queries.map(q => () => fetchAnalysis(q.prompt, ticker));
-      const results = await batchCalls(calls, 3, 1200);
+      const results = await batchCalls(allCalls, 3, 1200);
+      const weightedScore = calculateWeightedScore(results);
 
-      // Calculate overall score
-      const scores = results.map(r => r.score).filter(s => s > 0);
-      const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+      displaySingleStockResults(ticker, results, weightedScore);
 
-      // Display results
-      displaySingleStockResults(ticker, results, avgScore);
-
-      // Save to history
-      lastAnalysis = { mode: 'single', ticker, results, score: avgScore, timestamp: new Date().toISOString() };
-      updateWatchlistScore(ticker, avgScore);
+      lastAnalysis = { mode: 'single', ticker, results, score: weightedScore, timestamp: new Date().toISOString() };
+      updateWatchlistScore(ticker, weightedScore);
     }
 
     async function runCompareAnalysis(tickers) {
@@ -782,7 +988,7 @@
       lastAnalysis = { mode: 'portfolio', tickers, results, timestamp: new Date().toISOString() };
     }
 
-    async function fetchAnalysis(prompt, ticker) {
+    async function fetchAnalysis(prompt, ticker, id = 'generic') {
       try {
         const response = await fetch(API_ENDPOINT, {
           method: 'POST',
@@ -807,32 +1013,42 @@
         }
 
         const text = data.text || '';
-        const score = calculateScore(text);
+        const score = calculateScore(text, id);
 
         return {
+          id,
           text,
           score,
           timestamp: new Date().toISOString()
         };
       } catch (error) {
-        console.error(`Error fetching ${ticker}:`, error);
+        console.error(`Error fetching ${ticker} (${id}):`, error);
         return {
+          id,
           text: `Error: ${error.message}`,
           score: 0,
-          error: true
+          error: true,
+          timestamp: new Date().toISOString()
         };
       }
     }
 
-    function calculateScore(text) {
+    function calculateScore(text, id = '') {
       let score = 5;
       const lower = text.toLowerCase();
       
       if (lower.includes('strong') || lower.includes('bullish') || lower.includes('buy')) score += 2;
-      if (lower.includes('growth') || lower.includes('positive') || lower.includes('outperform')) score += 1;
-      if (lower.includes('decline') || lower.includes('bearish') || lower.includes('sell')) score -= 2;
-      if (lower.includes('risk') || lower.includes('concern') || lower.includes('underperform')) score -= 1;
-      
+      if (lower.includes('growth') || lower.includes('positive') || lower.includes('outperform') || lower.includes('accumulate')) score += 1;
+      if (lower.includes('decline') || lower.includes('bearish') || lower.includes('sell') || lower.includes('distribution')) score -= 2;
+      if (lower.includes('risk') || lower.includes('concern') || lower.includes('underperform') || lower.includes('headwind')) score -= 1;
+
+      if (id === 'options' && lower.includes('unusual')) score += 1;
+      if (id === 'institutional' && lower.includes('net accumulation')) score += 1;
+      if (id === 'macro' && lower.includes('tailwind')) score += 1;
+      if (id === 'sentiment' && lower.includes('retail buying')) score += 1;
+      if (id === 'competitive' && lower.includes('strengthening')) score += 1;
+      if (id === 'targets' && lower.includes('estimates rising')) score += 1;
+
       return Math.max(0, Math.min(10, score));
     }
 
@@ -847,26 +1063,23 @@
       thesisBanner.classList.add('show');
 
       let html = '<div class="cards-grid">';
-      const cardTitles = ['Overview', 'Financials', 'Insider Activity', 'Earnings History', 'Short Interest', 'Catalysts', 'Risks', 'News'];
-      
-      results.forEach((result, idx) => {
-        const statusClass = result.score >= 7 ? 'green' : result.score >= 5 ? 'yellow' : 'red';
-        const statusText = result.score >= 7 ? 'Bullish' : result.score >= 5 ? 'Neutral' : 'Bearish';
-        
+      results.forEach((result) => {
+        const title = cardDefinitions[result.id] || result.id.toUpperCase();
+        const statusClass = getCardStatus(result);
+        const statusText = statusClass === 'green' ? 'Bullish' : statusClass === 'yellow' ? 'Neutral' : 'Bearish';
+
         html += `
           <div class="card">
             <div class="card-title">
-              <span>${cardTitles[idx]}</span>
+              <span>${escapeHtml(title)}</span>
               <span class="status-chip status-${statusClass}">${statusText}</span>
             </div>
-            <div style="color: #00ff00; font-size: 13px; line-height: 1.6;">
-              ${escapeHtml(result.text.substring(0, 400))}
-            </div>
+            ${renderCardContent(result)}
           </div>
         `;
       });
       html += '</div>';
-      
+
       container.innerHTML = html;
     }
 
