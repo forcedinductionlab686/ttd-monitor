@@ -11,6 +11,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
+// Test endpoint to verify API key is set
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    hasKey: !!ANTHROPIC_API_KEY,
+    keyPreview: ANTHROPIC_API_KEY ? 
+      ANTHROPIC_API_KEY.slice(0,10) + '...' : 'NOT SET'
+  });
+});
+
 app.post('/api/claude', async (req, res) => {
   try {
     if (!ANTHROPIC_API_KEY) {
