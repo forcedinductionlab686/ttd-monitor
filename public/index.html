@@ -666,9 +666,15 @@
         statusBadge.textContent = 'Complete';
       } catch (error) {
         console.error('Analysis error:', error);
-        errorMsg.textContent = `Error: ${error.message}`;
+        errorMsg.innerHTML = `<strong>Error:</strong> ${escapeHtml(error.message)}<br><br>Check console (F12) for details.`;
         errorMsg.classList.add('show');
         statusBadge.textContent = 'Error';
+        
+        // Also show error in all card status chips
+        document.querySelectorAll('[id$="-status"]').forEach(chip => {
+          chip.textContent = 'Error';
+          chip.className = 'status-chip status-red';
+        });
       } finally {
         btn.disabled = false;
       }

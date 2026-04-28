@@ -14,9 +14,10 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 // Test endpoint to verify API key is set
 app.get('/api/test', (req, res) => {
   res.json({ 
-    hasKey: !!ANTHROPIC_API_KEY,
+    status: 'ok',
+    hasApiKey: !!ANTHROPIC_API_KEY,
     keyPreview: ANTHROPIC_API_KEY ? 
-      ANTHROPIC_API_KEY.slice(0,10) + '...' : 'NOT SET'
+      ANTHROPIC_API_KEY.slice(0, 14) + '...' : 'NOT SET'
   });
 });
 
