@@ -1,0 +1,18 @@
+{
+  "name": "ttd-monitor",
+  "version": "1.0.0",
+  "description": "TTD Trade Thesis Monitor - Real-time financial analysis dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["trading", "monitoring", "dashboard"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0",
+    "dotenv": "^16.0.3"
+  }
+}
